@@ -1,10 +1,8 @@
-
 import requests
-from datetime import datetime
 
 class ForecastAPI:
     def __init__(self):
-        self.api_key = 'your_api_key'  
+        self.api_key = 'e6df251613c11107a906aa5ffa18e1ac'
 
     def fetch_forecast_data(self, city):
         url = f'http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={self.api_key}&units=metric'
@@ -19,23 +17,25 @@ class ForecastAPI:
         if forecast_data:
             parsed_forecast = []
             for item in forecast_data['list']:
-                timestamp = item['dt']
-                date = datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d')
-                time = datetime.utcfromtimestamp(timestamp).strftime('%H:%M:%S')
+                date_time = item['dt_txt']
                 temperature = item['main']['temp']
-                min_temp = item['main']['temp_min']
-                max_temp = item['main']['temp_max']
                 humidity = item['main']['humidity']
-                weather_desc = item['weather'][0]['description']
+                pressure = item['main']['pressure']
+                wind_speed = item['wind']['speed']
+                wind_direction = self.get_wind_direction(item['wind']['deg'])
                 parsed_forecast.append({
-                    'date': date,
-                    'time': time,
+                    'date_time': date_time,
                     'temperature': temperature,
-                    'min_temperature': min_temp,
-                    'max_temperature': max_temp,
                     'humidity': humidity,
-                    'weather_description': weather_desc
+                    'pressure': pressure,
+                    'wind_speed': wind_speed,
+                    'wind_direction': wind_direction
                 })
             return parsed_forecast
         else:
             return None
+
+    def get_wind_direction(self, degrees):
+        directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+        index = round(degrees / (360. / len(directions)))
+        return directions[index % len(directions)]
