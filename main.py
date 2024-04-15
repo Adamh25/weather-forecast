@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from weather import WeatherAPI
 from forecast import ForecastAPI
@@ -35,21 +34,31 @@ class WeatherApp(tk.Tk):
         weather_data = self.weather_api.fetch_weather_data(city)
         if weather_data:
             temperature = weather_data['main']['temp']
-            self.weather_label.config(text=f"Weather in {city}: {temperature}°C")
+            humidity = weather_data['main']['humidity']
+            weather_description = weather_data['weather'][0]['description']
+            self.weather_label.config(text=f"Weather in {city}: {temperature}°C, Humidity: {humidity}%, Description: {weather_description}")
+        else:
+            self.weather_label.config(text="Failed to fetch weather data.")
 
     def get_forecast(self):
         city = self.city_entry.get()
         forecast_data = self.forecast_api.fetch_forecast_data(city)
         if forecast_data:
             forecast_text = "Forecast for {}:\n".format(city)
-            for forecast in forecast_data:
-                forecast_text += f"Date: {forecast['date']}, Time: {forecast['time']}, " \
-                                 f"Temperature: {forecast['temperature']}°C, " \
-                                 f"Min Temp: {forecast['min_temperature']}°C, " \
-                                 f"Max Temp: {forecast['max_temperature']}°C, " \
-                                 f"Humidity: {forecast['humidity']}%, " \
-                                 f"Weather: {forecast['weather_description']}\n"
-            self.forecast_label.config(text=forecast_text)
+            parsed_forecast = self.forecast_api.parse_forecast_data(forecast_data)
+            if parsed_forecast:
+                for forecast in parsed_forecast:
+                    forecast_text += f"Date: {forecast['date_time']}, " \
+                                     f"Temperature: {forecast['temperature']}°C, " \
+                                     f"Humidity: {forecast['humidity']}%, " \
+                                     f"Pressure: {forecast['pressure']}hPa, " \
+                                     f"Wind Speed: {forecast['wind_speed']}m/s, " \
+                                     f"Wind Direction: {forecast['wind_direction']}\n"
+            else:
+                forecast_text += "No forecast data available."
+        else:
+            forecast_text = "Failed to fetch forecast data."
+        self.forecast_label.config(text=forecast_text)
 
 if __name__ == "__main__":
     app = WeatherApp()
